@@ -28,10 +28,19 @@
 
 **Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
 
-**Acceptance Scenarios**:
+**Acceptance Scenarios** (BDD Gherkin 格式 - 必填):
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+```gherkin
+Scenario: [情境名稱]
+  Given [前置條件/初始狀態]
+  When [使用者操作/觸發事件]
+  Then [預期結果/驗證條件]
+
+Scenario: [情境名稱 - 邊界案例]
+  Given [前置條件]
+  When [操作]
+  Then [預期結果]
+```
 
 ---
 
@@ -43,9 +52,14 @@
 
 **Independent Test**: [Describe how this can be tested independently]
 
-**Acceptance Scenarios**:
+**Acceptance Scenarios** (BDD Gherkin 格式 - 必填):
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+```gherkin
+Scenario: [情境名稱]
+  Given [前置條件]
+  When [操作]
+  Then [預期結果]
+```
 
 ---
 
@@ -57,9 +71,14 @@
 
 **Independent Test**: [Describe how this can be tested independently]
 
-**Acceptance Scenarios**:
+**Acceptance Scenarios** (BDD Gherkin 格式 - 必填):
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+```gherkin
+Scenario: [情境名稱]
+  Given [前置條件]
+  When [操作]
+  Then [預期結果]
+```
 
 ---
 

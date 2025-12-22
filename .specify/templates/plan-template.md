@@ -31,7 +31,21 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| 原則 | 檢查項目 | 狀態 |
+|------|----------|------|
+| **TDD** | 測試先於實作撰寫？測試案例已確認失敗？ | ⬜ |
+| **BDD** | User Story 包含 Gherkin 情境？情境可獨立驗證？ | ⬜ |
+| **DDD** | Domain Model 已識別？使用 Ubiquitous Language？ | ⬜ |
+| **SOLID** | 設計遵循 SOLID 原則？依賴抽象而非具體？ | ⬜ |
+| **六角形架構** | Domain 層無框架依賴？依賴方向由外向內？ | ⬜ |
+| **程式碼品質** | 函式 ≤30行？類別 ≤300行？巢狀 ≤4層？ | ⬜ |
+| **測試標準** | 測試金字塔分層？Unit/Integration/E2E？ | ⬜ |
+| **提交紀律** | 每 Task 一次提交？訊息使用繁體中文？ | ⬜ |
+
+**架構約束**：
+- [ ] 框架依賴限於 `infrastructure/` 目錄
+- [ ] Repository 介面定義於 `domain/ports/`
+- [ ] 安全邏輯抽象於 Domain Service
 
 ## Project Structure
 
