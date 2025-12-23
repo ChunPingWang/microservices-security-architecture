@@ -1,0 +1,82 @@
+# Java / Gradle
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+.gradle/
+build/
+target/
+out/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.factorypath
+*.prefs
+.vscode/
+*.code-workspace
+.fleet/
+
+# Environment
+.env
+.env.*
+!.env.example
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+.coverage/
+coverage/
+*.lcov
+test-results/
+htmlcov/
+
+# Docker
+docker-compose.override.yml
+
+# Kubernetes secrets
+*.secret.yaml
+*.secret.yml
+secrets/
+kubeconfig*
+*.key
+*.crt
+*.pem
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+h2*.mv.db
+h2*.trace.db
+
+# Misc
+*.orig
+*.rej
+*.patch
+.cache/
+tmp/
+temp/
