@@ -90,8 +90,8 @@ Based on plan.md microservice structure:
 
 ### Tests for User Story 1 (TDD Required)
 
-- [ ] T028 [P] [US1] Contract test for POST /api/customers/register in customer-service/src/test/java/com/ecommerce/customer/contract/CustomerRegistrationContractTest.java
-- [ ] T029 [P] [US1] Contract test for POST /api/auth/login in customer-service/src/test/java/com/ecommerce/customer/contract/AuthenticationContractTest.java
+- [x] T028 [P] [US1] Contract test for POST /api/customers/register in customer-service/src/test/java/com/ecommerce/customer/contract/CustomerRegistrationContractTest.java
+- [x] T029 [P] [US1] Contract test for POST /api/auth/login in customer-service/src/test/java/com/ecommerce/customer/contract/AuthenticationContractTest.java
 - [x] T030 [P] [US1] Integration test for registration flow in customer-service/src/test/java/com/ecommerce/customer/integration/RegistrationFlowTest.java
 - [x] T031 [P] [US1] Integration test for login and account lockout in customer-service/src/test/java/com/ecommerce/customer/integration/LoginFlowTest.java
 - [x] T032 [P] [US1] Unit test for Customer aggregate in customer-service/src/test/java/com/ecommerce/customer/unit/domain/CustomerTest.java
