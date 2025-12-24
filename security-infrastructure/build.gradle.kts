@@ -32,6 +32,10 @@ dependencies {
     // Feign for service-to-service auth
     api("org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0")
 
+    // Distributed Tracing
+    api("io.micrometer:micrometer-tracing-bridge-brave")
+    api("io.zipkin.reporter2:zipkin-reporter-brave")
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

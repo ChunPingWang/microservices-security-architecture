@@ -64,6 +64,11 @@ configure(subprojects.filter {
     dependencies {
         "implementation"("org.springframework.boot:spring-boot-starter")
         "implementation"("org.springframework.boot:spring-boot-starter-validation")
+
+        // Distributed Tracing with Micrometer (Spring Boot 3.x)
+        "implementation"("io.micrometer:micrometer-tracing-bridge-brave")
+        "implementation"("io.zipkin.reporter2:zipkin-reporter-brave")
+
         "testImplementation"("org.springframework.boot:spring-boot-starter-test")
         "testImplementation"("org.testcontainers:junit-jupiter:1.19.3")
     }

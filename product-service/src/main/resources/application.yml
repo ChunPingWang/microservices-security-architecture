@@ -36,6 +36,8 @@ logging:
     com.ecommerce.product: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 # Actuator configuration
 management:
@@ -63,6 +65,14 @@ info:
     name: product-service
     description: Product catalog and inventory management service
     version: 1.0.0
+
+# Distributed Tracing configuration
+management.tracing:
+  sampling:
+    probability: 1.0
+
+management.zipkin.tracing:
+  endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
 
 jwt:
   secret: ${JWT_SECRET:your-256-bit-secret-key-for-jwt-token-signing-minimum-32-chars}
