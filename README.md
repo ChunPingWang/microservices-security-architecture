@@ -80,6 +80,367 @@
 | Kubernetes | 容器編排 |
 | Nginx Ingress | API 路由 |
 
+## 微服務安全架構
+
+本系統採用 Spring Security 實現完整的微服務安全防護，針對不同流量方向採用不同的安全策略。
+
+### 流量方向說明
+
+```
+                    ┌─────────────────────────────────────────┐
+                    │              Internet                    │
+                    └─────────────────┬───────────────────────┘
+                                      │ 南北向流量 (North-South)
+                                      │ 外部客戶端 → API Gateway
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           API Gateway                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  JwtAuthenticationFilter: 驗證 JWT Token                         │   │
+│  │  SecurityConfig: 路徑授權規則                                     │   │
+│  │  Rate Limiting: 流量限制                                          │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────┬───────────────────────────────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │  東西向流量 (East-West)
+          │                   │                   │  服務間內部通訊
+          ▼                   ▼                   ▼
+    ┌──────────┐        ┌──────────┐        ┌──────────┐
+    │ Customer │◄──────►│ Product  │◄──────►│  Order   │
+    │ Service  │        │ Service  │        │ Service  │
+    └──────────┘        └──────────┘        └──────────┘
+          │                   │                   │
+          │     ServiceAuthInterceptor            │
+          │     (服務間 JWT 認證)                  │
+          ▼                   ▼                   ▼
+    ┌──────────┐        ┌──────────┐        ┌──────────┐
+    │ Payment  │◄──────►│Logistics │◄──────►│  Sales   │
+    │ Service  │        │ Service  │        │ Service  │
+    └──────────┘        └──────────┘        └──────────┘
+```
+
+### 南北向安全 (North-South Traffic)
+
+南北向流量指外部客戶端（如行動 App、Web 前端）透過 API Gateway 進入系統的請求。
+
+#### 認證流程
+
+```
+Client                    API Gateway                Service
+  │                           │                         │
+  │  1. POST /api/auth/login  │                         │
+  │  ─────────────────────────►                         │
+  │                           │                         │
+  │  2. JWT Token (Access + Refresh)                    │
+  │  ◄─────────────────────────                         │
+  │                           │                         │
+  │  3. Request + Authorization: Bearer <token>         │
+  │  ─────────────────────────►                         │
+  │                           │                         │
+  │                     4. JwtAuthenticationFilter      │
+  │                        驗證 Token                    │
+  │                           │                         │
+  │                     5. 設定 SecurityContext          │
+  │                           │                         │
+  │                           │  6. 轉發請求 + 用戶資訊   │
+  │                           │  ────────────────────────►
+  │                           │                         │
+  │  7. Response              │                         │
+  │  ◄─────────────────────────────────────────────────
+```
+
+#### JwtAuthenticationFilter 實作
+
+```java
+// security-infrastructure/src/main/java/com/ecommerce/security/filter/JwtAuthenticationFilter.java
+
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CurrentUserContext currentUserContext;
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
+        try {
+            // 從 Header 提取 JWT Token
+            extractToken(request).ifPresent(this::authenticateToken);
+        } catch (Exception e) {
+            log.error("Cannot set user authentication: {}", e.getMessage());
+        }
+        filterChain.doFilter(request, response);
+    }
+
+    private Optional<String> extractToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return Optional.of(bearerToken.substring(7));
+        }
+        return Optional.empty();
+    }
+
+    private void authenticateToken(String token) {
+        // 驗證 Token 並取得 Claims
+        jwtTokenProvider.validateToken(token).ifPresent(claims -> {
+            String userId = claims.get("userId", String.class);
+            String email = claims.get("email", String.class);
+            String rolesStr = claims.get("roles", String.class);
+
+            // 設定 Spring Security Context
+            List<SimpleGrantedAuthority> authorities = parseRoles(rolesStr);
+            UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userId, null, authorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // 設定當前用戶上下文 (供業務層使用)
+            currentUserContext.setCurrentUser(userId, email, rolesStr);
+        });
+    }
+}
+```
+
+#### SecurityConfig 配置
+
+```java
+// api-gateway/src/main/java/com/ecommerce/gateway/config/SecurityConfig.java
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                // 公開端點
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/v1/products/**").permitAll()
+                .requestMatchers("/actuator/health/**").permitAll()
+
+                // 需要認證的端點
+                .requestMatchers("/api/v1/cart/**").authenticated()
+                .requestMatchers("/api/v1/orders/**").authenticated()
+
+                // 管理員專用端點
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class)
+            .build();
+    }
+}
+```
+
+### 東西向安全 (East-West Traffic)
+
+東西向流量指微服務之間的內部通訊，例如 Order Service 呼叫 Payment Service。
+
+#### 服務間認證機制
+
+```
+Order Service                                    Payment Service
+      │                                                │
+      │  1. 準備呼叫 Payment Service                     │
+      │                                                │
+      │  2. ServiceAuthInterceptor 注入服務 Token        │
+      │     Authorization: Bearer <service-token>       │
+      │                                                │
+      │  3. Feign Client 發送請求                        │
+      │  ─────────────────────────────────────────────► │
+      │                                                │
+      │                    4. JwtAuthenticationFilter   │
+      │                       驗證服務 Token             │
+      │                                                │
+      │                    5. 檢查 ROLE_SERVICE 權限     │
+      │                                                │
+      │  6. Response                                    │
+      │  ◄───────────────────────────────────────────── │
+```
+
+#### ServiceAuthInterceptor 實作
+
+```java
+// security-infrastructure/src/main/java/com/ecommerce/security/interceptor/ServiceAuthInterceptor.java
+
+@Component
+public class ServiceAuthInterceptor implements RequestInterceptor {
+
+    private static final String SERVICE_USER_ID = "service-internal";
+    private static final String SERVICE_EMAIL = "service@internal";
+    private static final String SERVICE_ROLE = "SERVICE";
+
+    private final JwtTokenProvider jwtTokenProvider;
+
+    @Override
+    public void apply(RequestTemplate template) {
+        // 為服務間呼叫產生專用 JWT Token
+        String serviceToken = jwtTokenProvider.generateAccessToken(
+            SERVICE_USER_ID,
+            SERVICE_EMAIL,
+            SERVICE_ROLE
+        );
+
+        template.header("Authorization", "Bearer " + serviceToken);
+    }
+}
+```
+
+#### Feign Client 配置
+
+```java
+// 服務呼叫端配置
+
+@FeignClient(
+    name = "payment-service",
+    configuration = FeignClientConfig.class
+)
+public interface PaymentServiceClient {
+
+    @PostMapping("/internal/payments/process")
+    PaymentResult processPayment(@RequestBody PaymentRequest request);
+}
+
+@Configuration
+public class FeignClientConfig {
+
+    @Bean
+    public ServiceAuthInterceptor serviceAuthInterceptor(
+            JwtTokenProvider jwtTokenProvider) {
+        return new ServiceAuthInterceptor(jwtTokenProvider);
+    }
+}
+```
+
+### 用戶上下文傳遞
+
+在微服務架構中，用戶資訊需要在服務間傳遞。本系統採用 `CurrentUserContext` 實現：
+
+```java
+// security-infrastructure/src/main/java/com/ecommerce/security/context/CurrentUserContext.java
+
+@Component
+@RequestScope
+public class CurrentUserContext {
+
+    private String userId;
+    private String email;
+    private String roles;
+
+    public void setCurrentUser(String userId, String email, String roles) {
+        this.userId = userId;
+        this.email = email;
+        this.roles = roles;
+    }
+
+    public String getCurrentUserId() {
+        return userId;
+    }
+
+    // 在業務層使用
+    // @Autowired CurrentUserContext currentUser;
+    // String userId = currentUser.getCurrentUserId();
+}
+```
+
+### AOP 授權檢查
+
+除了基於路徑的授權，系統還支援方法級別的授權：
+
+```java
+// 使用 @PreAuthorize 進行方法級授權
+@Service
+public class OrderService {
+
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+    public Order createOrder(CreateOrderCommand command) {
+        // ...
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void cancelOrder(String orderId) {
+        // ...
+    }
+}
+```
+
+### 分散式追蹤整合
+
+安全元件與分散式追蹤整合，確保請求可被追蹤：
+
+```java
+// security-infrastructure/src/main/java/com/ecommerce/security/tracing/TracingFeignInterceptor.java
+
+@Component
+public class TracingFeignInterceptor implements RequestInterceptor {
+
+    private final Tracer tracer;
+
+    @Override
+    public void apply(RequestTemplate template) {
+        Span currentSpan = tracer.currentSpan();
+        if (currentSpan != null) {
+            // 傳遞 B3 追蹤標頭
+            template.header("X-B3-TraceId", currentSpan.context().traceId());
+            template.header("X-B3-SpanId", currentSpan.context().spanId());
+            template.header("X-B3-Sampled", "1");
+        }
+    }
+}
+```
+
+### 安全最佳實踐
+
+| 實踐項目 | 說明 |
+|---------|------|
+| 無狀態認證 | 使用 JWT，不依賴 Session |
+| Token 過期 | Access Token 15分鐘，Refresh Token 7天 |
+| 密碼加密 | 使用 BCrypt 加密儲存 |
+| 帳號鎖定 | 連續登入失敗 5 次鎖定 30 分鐘 |
+| HTTPS | 生產環境強制使用 HTTPS |
+| 服務隔離 | 內部服務使用專用 Service Token |
+| 追蹤整合 | 安全事件納入分散式追蹤 |
+
+### 測試安全元件
+
+```java
+// 使用 Mock 進行安全測試
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class OrderControllerSecurityTest {
+
+    @Test
+    @WithMockUser(roles = "CUSTOMER")
+    void authenticatedUser_canCreateOrder() {
+        // 模擬已認證用戶
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(orderJson))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
+    void unauthenticatedUser_cannotCreateOrder() {
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(orderJson))
+            .andExpect(status().isUnauthorized());
+    }
+}
+```
+
+> 📘 **詳細說明**: 完整的安全架構規格文件請參考 [spring-security-microservices-architecture.md](./spring-security-microservices-architecture.md)
+
 ## 快速開始
 
 ### 環境需求
