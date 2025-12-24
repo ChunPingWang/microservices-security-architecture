@@ -1,10 +1,8 @@
-package com.ecommerce.order.infrastructure.web;
+package com.ecommerce.payment.infrastructure.web;
 
-import com.ecommerce.order.application.exceptions.CartEmptyException;
-import com.ecommerce.order.application.exceptions.CartItemNotFoundException;
-import com.ecommerce.order.application.exceptions.InsufficientStockException;
-import com.ecommerce.order.application.exceptions.OrderNotFoundException;
-import com.ecommerce.order.application.exceptions.ProductNotFoundException;
+import com.ecommerce.payment.application.exceptions.OrderNotFoundException;
+import com.ecommerce.payment.application.exceptions.PaymentFailedException;
+import com.ecommerce.payment.application.exceptions.PaymentNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,34 +16,12 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * Global exception handler for order service REST API.
+ * Global exception handler for payment service REST API.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFoundException ex) {
-        log.warn("Product not found: {}", ex.getProductId());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(createErrorResponse("PRODUCT_NOT_FOUND", ex.getMessage()));
-    }
-
-    @ExceptionHandler(CartItemNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleCartItemNotFound(CartItemNotFoundException ex) {
-        log.warn("Cart item not found: {}", ex.getProductId());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(createErrorResponse("CART_ITEM_NOT_FOUND", ex.getMessage()));
-    }
-
-    @ExceptionHandler(InsufficientStockException.class)
-    public ResponseEntity<Map<String, Object>> handleInsufficientStock(InsufficientStockException ex) {
-        log.warn("Insufficient stock for product {}: requested {}",
-                ex.getProductId(), ex.getRequestedQuantity());
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(createErrorResponse("INSUFFICIENT_STOCK", ex.getMessage()));
-    }
 
     @ExceptionHandler(OrderNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleOrderNotFound(OrderNotFoundException ex) {
@@ -54,11 +30,18 @@ public class GlobalExceptionHandler {
                 .body(createErrorResponse("ORDER_NOT_FOUND", ex.getMessage()));
     }
 
-    @ExceptionHandler(CartEmptyException.class)
-    public ResponseEntity<Map<String, Object>> handleCartEmpty(CartEmptyException ex) {
-        log.warn("Cart is empty: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(createErrorResponse("CART_EMPTY", ex.getMessage()));
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handlePaymentNotFound(PaymentNotFoundException ex) {
+        log.warn("Payment not found: {}", ex.getPaymentId());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(createErrorResponse("PAYMENT_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<Map<String, Object>> handlePaymentFailed(PaymentFailedException ex) {
+        log.warn("Payment failed: {} - {}", ex.getErrorCode(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                .body(createErrorResponse(ex.getErrorCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
