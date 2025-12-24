@@ -29,7 +29,25 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    db:
+      enabled: true
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: sales-service
+    description: Promotions and coupon management service
+    version: 1.0.0
 
 logging:
   level:

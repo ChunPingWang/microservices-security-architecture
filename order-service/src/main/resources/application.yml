@@ -36,6 +36,33 @@ logging:
     com.ecommerce.order: DEBUG
     org.springframework.security: DEBUG
 
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    db:
+      enabled: true
+    redis:
+      enabled: true
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: order-service
+    description: Order management and shopping cart service
+    version: 1.0.0
+
 security:
   jwt:
     secret-key: ${JWT_SECRET:your-256-bit-secret-key-for-jwt-token-signing-minimum-32-chars}
