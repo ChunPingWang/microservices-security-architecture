@@ -129,35 +129,35 @@ Based on plan.md microservice structure:
 
 ### Tests for User Story 2 (TDD Required)
 
-- [ ] T051 [P] [US2] Contract test for GET /api/products in product-service/src/test/java/com/ecommerce/product/contract/ProductListContractTest.java
-- [ ] T052 [P] [US2] Contract test for GET /api/products/search in product-service/src/test/java/com/ecommerce/product/contract/ProductSearchContractTest.java
-- [ ] T053 [P] [US2] Contract test for GET /api/products/{id} in product-service/src/test/java/com/ecommerce/product/contract/ProductDetailContractTest.java
-- [ ] T054 [P] [US2] Integration test for category browsing in product-service/src/test/java/com/ecommerce/product/integration/CategoryBrowseTest.java
-- [ ] T055 [P] [US2] Integration test for Elasticsearch search in product-service/src/test/java/com/ecommerce/product/integration/ProductSearchTest.java
-- [ ] T056 [P] [US2] Unit test for Product aggregate in product-service/src/test/java/com/ecommerce/product/unit/domain/ProductTest.java
-- [ ] T057 [P] [US2] Unit test for SKU value object in product-service/src/test/java/com/ecommerce/product/unit/domain/SKUTest.java
+- [x] T051 [P] [US2] Contract test for GET /api/products in product-service/src/test/java/com/ecommerce/product/contract/ProductListContractTest.java
+- [x] T052 [P] [US2] Contract test for GET /api/products/search in product-service/src/test/java/com/ecommerce/product/contract/ProductSearchContractTest.java
+- [x] T053 [P] [US2] Contract test for GET /api/products/{id} in product-service/src/test/java/com/ecommerce/product/contract/ProductDetailContractTest.java
+- [x] T054 [P] [US2] Integration test for category browsing in product-service/src/test/java/com/ecommerce/product/integration/CategoryBrowseTest.java
+- [x] T055 [P] [US2] Integration test for product search in product-service/src/test/java/com/ecommerce/product/integration/ProductSearchTest.java
+- [x] T056 [P] [US2] Unit test for Product aggregate in product-service/src/test/java/com/ecommerce/product/unit/domain/ProductTest.java
+- [x] T057 [P] [US2] Unit test for SKU value object in product-service/src/test/java/com/ecommerce/product/unit/domain/SKUTest.java
 
 ### Implementation for User Story 2
 
-- [ ] T058 [P] [US2] Create SKU value object in product-service/src/main/java/com/ecommerce/product/domain/value_objects/SKU.java
-- [ ] T059 [P] [US2] Create Price value object in product-service/src/main/java/com/ecommerce/product/domain/value_objects/Price.java
-- [ ] T060 [P] [US2] Create Stock value object in product-service/src/main/java/com/ecommerce/product/domain/value_objects/Stock.java
-- [ ] T061 [US2] Create Product entity in product-service/src/main/java/com/ecommerce/product/domain/entities/Product.java
-- [ ] T062 [P] [US2] Create Category entity in product-service/src/main/java/com/ecommerce/product/domain/entities/Category.java
-- [ ] T063 [P] [US2] Create Inventory entity in product-service/src/main/java/com/ecommerce/product/domain/entities/Inventory.java
-- [ ] T064 [US2] Create ProductAggregate in product-service/src/main/java/com/ecommerce/product/domain/aggregates/ProductAggregate.java
-- [ ] T065 [US2] Create ProductRepository port in product-service/src/main/java/com/ecommerce/product/domain/ports/ProductRepository.java
-- [ ] T066 [US2] Create ProductSearchPort for search abstraction in product-service/src/main/java/com/ecommerce/product/domain/ports/ProductSearchPort.java
-- [ ] T067 [US2] Create BrowseProductsUseCase in product-service/src/main/java/com/ecommerce/product/application/use_cases/BrowseProductsUseCase.java
-- [ ] T068 [US2] Create SearchProductsUseCase in product-service/src/main/java/com/ecommerce/product/application/use_cases/SearchProductsUseCase.java
-- [ ] T069 [US2] Create GetProductDetailUseCase in product-service/src/main/java/com/ecommerce/product/application/use_cases/GetProductDetailUseCase.java
-- [ ] T070 [US2] Create JPA Product entity in product-service/src/main/java/com/ecommerce/product/infrastructure/persistence/JpaProductEntity.java
-- [ ] T071 [US2] Create JPA ProductRepository implementation in product-service/src/main/java/com/ecommerce/product/infrastructure/persistence/JpaProductRepository.java
-- [ ] T072 [US2] Create Elasticsearch adapter in product-service/src/main/java/com/ecommerce/product/infrastructure/search/ElasticsearchProductAdapter.java
-- [ ] T073 [US2] Create ProductController REST API in product-service/src/main/java/com/ecommerce/product/infrastructure/web/ProductController.java
-- [ ] T074 [US2] Create CategoryController REST API in product-service/src/main/java/com/ecommerce/product/infrastructure/web/CategoryController.java
-- [ ] T075 [US2] Create Flyway migration V1__create_product_tables.sql in product-service/src/main/resources/db/migration/V1__create_product_tables.sql
-- [ ] T076 [US2] Configure Elasticsearch in product-service/src/main/resources/application.yml
+- [x] T058 [P] [US2] Create SKU value object in product-service/src/main/java/com/ecommerce/product/domain/value_objects/SKU.java
+- [x] T059 [P] [US2] Create Price value object - Using shared-kernel Money value object
+- [x] T060 [P] [US2] Create Stock value object in product-service/src/main/java/com/ecommerce/product/domain/value_objects/Stock.java
+- [x] T061 [US2] Create Product entity in product-service/src/main/java/com/ecommerce/product/domain/entities/Product.java
+- [x] T062 [P] [US2] Create Category entity in product-service/src/main/java/com/ecommerce/product/domain/entities/Category.java
+- [x] T063 [P] [US2] Create Inventory entity in product-service/src/main/java/com/ecommerce/product/domain/entities/Inventory.java
+- [x] T064 [US2] Create ProductAggregate - Product entity includes aggregate root behavior
+- [x] T065 [US2] Create ProductRepository port in product-service/src/main/java/com/ecommerce/product/domain/ports/ProductRepository.java
+- [x] T066 [US2] Create ProductSearchPort for search abstraction in product-service/src/main/java/com/ecommerce/product/domain/ports/ProductSearchPort.java
+- [x] T067 [US2] Create BrowseProductsUseCase in product-service/src/main/java/com/ecommerce/product/application/usecases/BrowseProductsUseCase.java
+- [x] T068 [US2] Create SearchProductsUseCase in product-service/src/main/java/com/ecommerce/product/application/usecases/SearchProductsUseCase.java
+- [x] T069 [US2] Create GetProductDetailUseCase in product-service/src/main/java/com/ecommerce/product/application/usecases/GetProductDetailUseCase.java
+- [x] T070 [US2] Create JPA Product entity in product-service/src/main/java/com/ecommerce/product/infrastructure/persistence/entities/ProductJpaEntity.java
+- [x] T071 [US2] Create JPA ProductRepository implementation in product-service/src/main/java/com/ecommerce/product/infrastructure/persistence/adapters/ProductRepositoryAdapter.java
+- [x] T072 [US2] Create InMemory search adapter in product-service/src/main/java/com/ecommerce/product/infrastructure/search/InMemoryProductSearchAdapter.java
+- [x] T073 [US2] Create ProductController REST API in product-service/src/main/java/com/ecommerce/product/infrastructure/web/controllers/ProductController.java
+- [x] T074 [US2] Create CategoryController REST API in product-service/src/main/java/com/ecommerce/product/infrastructure/web/controllers/CategoryController.java
+- [x] T075 [US2] Create Flyway migration V1__create_product_tables.sql in product-service/src/main/resources/db/migration/V1__create_product_tables.sql
+- [x] T076 [US2] Configure application settings in product-service/src/main/resources/application.yml
 
 **Checkpoint**: User Story 2 fully functional - customers can browse and search products
 

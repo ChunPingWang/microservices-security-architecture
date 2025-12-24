@@ -72,6 +72,27 @@ public class InMemoryProductSearchAdapter implements ProductSearchPort {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public long count(String keyword) {
+        String lowerKeyword = keyword.toLowerCase();
+
+        return index.values().stream()
+                .filter(Product::isActive)
+                .filter(p -> matchesKeyword(p, lowerKeyword))
+                .count();
+    }
+
+    @Override
+    public long countInCategory(String keyword, UUID categoryId) {
+        String lowerKeyword = keyword.toLowerCase();
+
+        return index.values().stream()
+                .filter(Product::isActive)
+                .filter(p -> p.getCategoryId().equals(categoryId))
+                .filter(p -> matchesKeyword(p, lowerKeyword))
+                .count();
+    }
+
     private boolean matchesKeyword(Product product, String keyword) {
         return product.getName().toLowerCase().contains(keyword)
                 || (product.getDescription() != null

@@ -37,14 +37,15 @@ public class SearchProductsUseCase {
             return ProductSearchResult.of(List.of(), 0, page, size);
         }
 
-        List<Product> products = productSearchPort.search(keyword.trim(), page, size);
+        String trimmedKeyword = keyword.trim();
+        List<Product> products = productSearchPort.search(trimmedKeyword, page, size);
+        long totalCount = productSearchPort.count(trimmedKeyword);
 
         List<ProductResponse> responses = products.stream()
                 .map(this::toResponseWithStock)
                 .toList();
 
-        // Note: For accurate pagination, search port should return total count
-        return ProductSearchResult.of(responses, responses.size(), page, size);
+        return ProductSearchResult.of(responses, totalCount, page, size);
     }
 
     /**
@@ -56,15 +57,17 @@ public class SearchProductsUseCase {
             return ProductSearchResult.of(List.of(), 0, page, size);
         }
 
+        String trimmedKeyword = keyword.trim();
         List<Product> products = productSearchPort.searchInCategory(
-                keyword.trim(), categoryId, page, size
+                trimmedKeyword, categoryId, page, size
         );
+        long totalCount = productSearchPort.countInCategory(trimmedKeyword, categoryId);
 
         List<ProductResponse> responses = products.stream()
                 .map(this::toResponseWithStock)
                 .toList();
 
-        return ProductSearchResult.of(responses, responses.size(), page, size);
+        return ProductSearchResult.of(responses, totalCount, page, size);
     }
 
     /**

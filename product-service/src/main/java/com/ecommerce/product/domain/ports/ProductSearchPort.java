@@ -34,4 +34,14 @@ public interface ProductSearchPort {
      * Suggests products based on partial input.
      */
     List<String> suggest(String prefix, int limit);
+
+    /**
+     * Counts total products matching keyword.
+     */
+    long count(String keyword);
+
+    /**
+     * Counts total products matching keyword within a category.
+     */
+    long countInCategory(String keyword, UUID categoryId);
 }
