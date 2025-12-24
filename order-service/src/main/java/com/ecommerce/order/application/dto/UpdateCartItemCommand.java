@@ -1,0 +1,13 @@
+package com.ecommerce.order.application.dto;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+/**
+ * Command DTO for updating cart item quantity.
+ */
+public record UpdateCartItemCommand(
+        @Min(value = 1, message = "Quantity must be at least 1")
+        @Max(value = 99, message = "Quantity cannot exceed 99")
+        int quantity
+) {}

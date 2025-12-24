@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sales-service
+  namespace: ecommerce
+  labels:
+    app: sales-service
+    app.kubernetes.io/name: sales-service
+    app.kubernetes.io/part-of: ecommerce-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sales-service
+  template:
+    metadata:
+      labels:
+        app: sales-service
+    spec:
+      containers:
+        - name: sales-service
+          image: ecommerce/sales-service:latest
+          ports:
+            - containerPort: 8085
+          envFrom:
+            - configMapRef:
+                name: ecommerce-config
+            - secretRef:
+                name: ecommerce-secrets
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://$(DB_HOST):$(DB_PORT)/sales_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-secrets
+                  key: DB_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-secrets
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sales-service
+  namespace: ecommerce
+  labels:
+    app: sales-service
+spec:
+  selector:
+    app: sales-service
+  ports:
+    - port: 8085
+      targetPort: 8085
+      protocol: TCP
+  type: ClusterIP

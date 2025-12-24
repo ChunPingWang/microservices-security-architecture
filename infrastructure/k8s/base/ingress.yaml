@@ -1,0 +1,103 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ecommerce-ingress
+  namespace: ecommerce
+  labels:
+    app.kubernetes.io/name: ecommerce-ingress
+    app.kubernetes.io/part-of: ecommerce-platform
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.ecommerce.local
+      http:
+        paths:
+          # Authentication endpoints
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: customer-service
+                port:
+                  number: 8081
+          # Customer endpoints
+          - path: /api/customers
+            pathType: Prefix
+            backend:
+              service:
+                name: customer-service
+                port:
+                  number: 8081
+          # Product endpoints
+          - path: /api/v1/products
+            pathType: Prefix
+            backend:
+              service:
+                name: product-service
+                port:
+                  number: 8082
+          # Cart endpoints
+          - path: /api/v1/cart
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 8083
+          # Order endpoints
+          - path: /api/v1/orders
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 8083
+          # Payment endpoints
+          - path: /api/v1/payments
+            pathType: Prefix
+            backend:
+              service:
+                name: payment-service
+                port:
+                  number: 8084
+          # Shipment endpoints
+          - path: /api/v1/shipments
+            pathType: Prefix
+            backend:
+              service:
+                name: logistics-service
+                port:
+                  number: 8084
+          # Promotion endpoints
+          - path: /api/v1/promotions
+            pathType: Prefix
+            backend:
+              service:
+                name: sales-service
+                port:
+                  number: 8085
+          # Coupon endpoints
+          - path: /api/v1/coupons
+            pathType: Prefix
+            backend:
+              service:
+                name: sales-service
+                port:
+                  number: 8085
+    # Admin portal
+    - host: admin.ecommerce.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-portal
+                port:
+                  number: 8090
