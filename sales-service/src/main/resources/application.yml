@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: sales-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sales_db
+    username: sales_user
+    password: sales_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8085
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    com.ecommerce.sales: DEBUG
+    org.springframework.web: INFO
